@@ -3,198 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Health Monitor - Bluetooth Web</title>
+  <title>Health Monitor System</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
     }
-    .form-group {
-      margin-bottom: 15px;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
       display: flex;
       align-items: center;
+      gap: 10px;
     }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .status-badge.connected {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-badge.simulated {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
     .form-group label {
-      width: 120px;
-      font-weight: bold;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
     }
-    .form-group input {
-      padding: 6px 10px;
-      font-size: 14px;
+
+    .input-row {
+      display: flex;
+      gap: 10px;
     }
-    button {
-      padding: 6px 12px;
-      margin-left: 10px;
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    input[readonly] {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .btn {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s;
     }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #059669;
+    }
+
+    .btn-warning {
+      background-color: var(--warning);
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background-color: #d97706;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background-color: #f1f5f9;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .table-container {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      text-align: left;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
+
     th {
-      background-color: #f4f4f4;
-    }
-    .download-container {
-      margin-top: 15px;
-      text-align: right;
-    }
-  </style>
-</head>
-<body>
-
-  <h2>Monitoring Kesehatan</h2>
-
-  <!-- Input Nama & Tombol Connect -->
-  <div class="form-group">
-    <label for="nama">Nama :</label>
-    <input type="text" id="nama" placeholder="Masukkan nama">
-    <button id="btnConnect" onclick="connectBluetooth()">Connect Bluetooth</button>
-  </div>
-
-  <!-- Display HR -->
-  <div class="form-group">
-    <label for="hr">HR :</label>
-    <input type="text" id="hr" readonly placeholder="0 BPM">
-  </div>
-
-  <!-- Display Temperatur & Tombol Save -->
-  <div class="form-group">
-    <label for="temp">Temperatur :</label>
-    <input type="text" id="temp" readonly placeholder="0 °C">
-    <button onclick="saveData()">Save Data</button>
-  </div>
-
-  <hr>
-
-  <!-- Tabel Simpan Data -->
-  <table>
-    <thead>
-      <tr>
-        <th>Nama</th>
-        <th>HR</th>
-        <th>Temperature</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <!-- Data tersimpan akan muncul di sini -->
-    </tbody>
-  </table>
-
-  <!-- Tombol Download CSV -->
-  <div class="download-container">
-    <button onclick="downloadCSV()">Download (CSV)</button>
-  </div>
-
-  <script>
-    let port;
-    let reader;
-    let savedRecords = [];
-
-    // Fungsi Koneksi Bluetooth melalui Serial Web API (Chrome/Edge Desktop & Android dengan Flag)
-    async function connectBluetooth() {
-      try {
-        // Meminta izin koneksi Serial Bluetooth
-        port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 115200 });
-
-        document.getElementById('btnConnect').innerText = "Connected";
-        document.getElementById('btnConnect').style.backgroundColor = "#90ee90";
-
-        const textDecoder = new TextDecoderStream();
-        const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-        reader = textDecoder.readable.getReader();
-
-        readData();
-      } catch (error) {
-        console.error("Gagal koneksi Bluetooth:", error);
-        alert("Gagal menghubungkan Bluetooth! Pastikan peranti mendukung Web Serial/Bluetooth.");
-      }
-    }
-
-    // Membaca data serial terus-menerus
-    async function readData() {
-      let buffer = "";
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) {
-          reader.releaseLock();
-          break;
-        }
-        if (value) {
-          buffer += value;
-          let lines = buffer.split("\n");
-          buffer = lines.pop(); // Simpan sisa data incomplete ke buffer
-
-          for (let line of lines) {
-            line = line.trim();
-            if (line.length > 0) {
-              let parts = line.split(",");
-              if (parts.length === 2) {
-                document.getElementById('hr').value = parts[0] + " BPM";
-                document.getElementById('temp').value = parts[1] + " °C";
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Fungsi Tombol Save Data
-    function saveData() {
-      const nama = document.getElementById('nama').value.trim();
-      const hr = document.getElementById('hr').value;
-      const temp = document.getElementById('temp').value;
-
-      if (!nama) {
-        alert("Silakan isi Nama terlebih dahulu!");
-        return;
-      }
-      if (!hr || !temp) {
-        alert("Data HR dan Temperatur belum diterima!");
-        return;
-      }
-
-      // Simpan ke array
-      const record = { nama, hr, temp };
-      savedRecords.push(record);
-
-      // Tambahkan ke tabel DOM
-      const tbody = document.getElementById('tableBody');
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${nama}</td><td>${hr}</td><td>${temp}</td>`;
-      tbody.appendChild(row);
-    }
-
-    // Fungsi Download File CSV
-    function downloadCSV() {
-      if (savedRecords.length === 0) {
-        alert("Belum ada data yang disimpan!");
-        return;
-      }
-
-      let csvContent = "data:text/csv;charset=utf-8,Nama,HR,Temperature\n";
-      savedRecords.forEach(r => {
-        csvContent += `"${r.nama}","${r.hr}","${r.temp}"\n`;
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "data_kesehatan.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  </script>
-</body>
-</html>
+      background-color: #f1
