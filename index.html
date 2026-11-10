@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Monitor - Bluetooth Web</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .form-group label {
+      width: 120px;
+      font-weight: bold;
+    }
+    .form-group input {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+    button {
+      padding: 6px 12px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .download-container {
+      margin-top: 15px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Monitoring Kesehatan</h2>
+
+  <!-- Input Nama & Tombol Connect -->
+  <div class="form-group">
+    <label for="nama">Nama :</label>
+    <input type="text" id="nama" placeholder="Masukkan nama">
+    <button id="btnConnect" onclick="connectBluetooth()">Connect Bluetooth</button>
+  </div>
+
+  <!-- Display HR -->
+  <div class="form-group">
+    <label for="hr">HR :</label>
+    <input type="text" id="hr" readonly placeholder="0 BPM">
+  </div>
+
+  <!-- Display Temperatur & Tombol Save -->
+  <div class="form-group">
+    <label for="temp">Temperatur :</label>
+    <input type="text" id="temp" readonly placeholder="0 °C">
+    <button onclick="saveData()">Save Data</button>
+  </div>
+
+  <hr>
+
+  <!-- Tabel Simpan Data -->
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>HR</th>
+        <th>Temperature</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- Data tersimpan akan muncul di sini -->
+    </tbody>
+  </table>
+
+  <!-- Tombol Download CSV -->
+  <div class="download-container">
+    <button onclick="downloadCSV()">Download (CSV)</button>
+  </div>
+
+  <script>
+    let port;
+    let reader;
+    let savedRecords = [];
+
+    // Fungsi Koneksi Bluetooth melalui Serial Web API (Chrome/Edge Desktop & Android dengan Flag)
+    async function connectBluetooth() {
+      try {
+        // Meminta izin koneksi Serial Bluetooth
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+
+        document.getElementById('btnConnect').innerText = "Connected";
+        document.getElementById('btnConnect').style.backgroundColor = "#90ee90";
+
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+        reader = textDecoder.readable.getReader();
+
+        readData();
+      } catch (error) {
+        console.error("Gagal koneksi Bluetooth:", error);
+        alert("Gagal menghubungkan Bluetooth! Pastikan peranti mendukung Web Serial/Bluetooth.");
+      }
+    }
+
+    // Membaca data serial terus-menerus
+    async function readData() {
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          reader.releaseLock();
+          break;
+        }
+        if (value) {
+          buffer += value;
+          let lines = buffer.split("\n");
+          buffer = lines.pop(); // Simpan sisa data incomplete ke buffer
+
+          for (let line of lines) {
+            line = line.trim();
+            if (line.length > 0) {
+              let parts = line.split(",");
+              if (parts.length === 2) {
+                document.getElementById('hr').value = parts[0] + " BPM";
+                document.getElementById('temp').value = parts[1] + " °C";
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Fungsi Tombol Save Data
+    function saveData() {
+      const nama = document.getElementById('nama').value.trim();
+      const hr = document.getElementById('hr').value;
+      const temp = document.getElementById('temp').value;
+
+      if (!nama) {
+        alert("Silakan isi Nama terlebih dahulu!");
+        return;
+      }
+      if (!hr || !temp) {
+        alert("Data HR dan Temperatur belum diterima!");
+        return;
+      }
+
+      // Simpan ke array
+      const record = { nama, hr, temp };
+      savedRecords.push(record);
+
+      // Tambahkan ke tabel DOM
+      const tbody = document.getElementById('tableBody');
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${nama}</td><td>${hr}</td><td>${temp}</td>`;
+      tbody.appendChild(row);
+    }
+
+    // Fungsi Download File CSV
+    function downloadCSV() {
+      if (savedRecords.length === 0) {
+        alert("Belum ada data yang disimpan!");
+        return;
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,Nama,HR,Temperature\n";
+      savedRecords.forEach(r => {
+        csvContent += `"${r.nama}","${r.hr}","${r.temp}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "data_kesehatan.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
